@@ -30,8 +30,6 @@
 #include "blob.h"
 #include "blobmsg_json.h"
 
-#define MAX_VARLEN	256
-
 static struct avl_tree env_vars;
 
 static const char *var_prefix = "";
@@ -190,7 +188,7 @@ static int jshn_parse(const char *str)
 	return 0;
 }
 
-static char *getenv_avl(const char *key)
+static char *getenv_val(const char *key)
 {
 	struct env_var *var = avl_find_element(&env_vars, key, var, avl);
 	return var ? var->val : NULL;
@@ -203,7 +201,7 @@ static char *get_keys(const char *prefix)
 
 	keys = alloca(len);
 	snprintf(keys, len, "%sK_%s", var_prefix, prefix);
-	return getenv_avl(keys);
+	return getenv_val(keys);
 }
 
 static void get_var(const char *prefix, const char **name, char **var, char **type)
@@ -214,13 +212,13 @@ static void get_var(const char *prefix, const char **name, char **var, char **ty
 	tmpname = alloca(len);
 
 	snprintf(tmpname, len, "%s%s_%s", var_prefix, prefix, *name);
-	*var = getenv_avl(tmpname);
+	*var = getenv_val(tmpname);
 
 	snprintf(tmpname, len, "%sT_%s_%s", var_prefix, prefix, *name);
-	*type = getenv_avl(tmpname);
+	*type = getenv_val(tmpname);
 
 	snprintf(tmpname, len, "%sN_%s_%s", var_prefix, prefix, *name);
-	varname = getenv_avl(tmpname);
+	varname = getenv_val(tmpname);
 	if (varname)
 		*name = varname;
 }
