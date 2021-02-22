@@ -10,7 +10,7 @@ include_directories(${JSONC_INCLUDE_DIRS})
 find_library(jsonc NAMES json-c)
 
 add_executable(jshn jshn.c)
-target_link_libraries(jshn ${json})
+target_link_libraries(jshn ${jsonc})
 
 install(TARGETS jshn
 	ARCHIVE DESTINATION lib

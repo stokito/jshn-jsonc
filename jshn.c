@@ -23,25 +23,15 @@
 #include <getopt.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <inttypes.h>
-#include "list.h"
 
-#include "avl.h"
-#include "blob.h"
-#include "blobmsg_json.h"
-
-static struct avl_tree env_vars;
-
+struct lh_table *env_vars = NULL;
 static const char *var_prefix = "";
 static int var_prefix_len = 0;
 
 static int add_json_element(const char *key, json_object *obj);
 
-struct env_var {
-	struct avl_node avl;
-	char *val;
-};
-struct env_var *vars;
 static void load_vars_from_envs();
 
 static int add_json_object(json_object *obj)
@@ -190,8 +180,8 @@ static int jshn_parse(const char *str)
 
 static char *getenv_val(const char *key)
 {
-	struct env_var *var = avl_find_element(&env_vars, key, var, avl);
-	return var ? var->val : NULL;
+	struct lh_entry *var = lh_table_lookup_entry(env_vars, key);
+	return var ? (char *) var->v : NULL;
 }
 
 static char *get_keys(const char *prefix)
@@ -297,7 +287,7 @@ static int jshn_format(FILE *stream)
 	ret = 0;
 
 out:
-	free(vars);
+	lh_table_free(env_vars);
 	json_object_put(obj);
 	return ret;
 }
@@ -308,61 +298,38 @@ static int usage(const char *progname)
 	return 2;
 }
 
-/**
- * Compare env vars by keys
- *
- * The key in AVL tree is the env itself with KEY=VALUE pair.
- * So to compare we must compare until the '=' separator.
- */
-static int avl_strcmp_var(const void *k1, const void *k2, void *ptr)
+static void env_var_lh_entry_free(struct lh_entry *ent)
 {
-	const char *s1 = k1;
-	const char *s2 = k2;
-	char c1, c2;
-
-	while (*s1 && *s1 == *s2) {
-		s1++;
-		s2++;
-	}
-
-	c1 = *s1;
-	c2 = *s2;
-	if (c1 == '=')
-		c1 = 0;
-	if (c2 == '=')
-		c2 = 0;
-
-	return c1 - c2;
+	free(lh_entry_k(ent));
 }
 
 /**
  * JSON variables are passed via environment variables.
- * But getenv() makes a linear search so for faster lookups we store envs into AVL tree.
+ * But getenv() makes a linear search so for faster lookups we store envs into hash table.
  *
- * The function allocates `vars` variable and it should be freed afterwards.
+ * The function allocates `env_vars` variable and it should be freed afterwards.
  */
 static void load_vars_from_envs() {
 	int i;
 	extern char **environ;
-	avl_init(&env_vars, avl_strcmp_var, false, NULL);
 	// count env vars
 	for (i = 0; environ[i]; i++);
 
-	vars = calloc(i, sizeof(*vars));
-	if (!vars) {
+	env_vars = lh_kchar_table_new(i, &env_var_lh_entry_free);
+	if (!env_vars) {
 		fprintf(stderr, "%m\n");
 		exit(EXIT_FAILURE);
 	}
 	for (i = 0; environ[i]; i++) {
 		char *c;
-		// env var will be a key but we'll ignore it's value part in avl_strcmp_var()
-		vars[i].avl.key = environ[i];
 		c = strchr(environ[i], '=');
 		if (!c)
 			continue;
+		size_t key_length = c - environ[i];
+		char *key = strndup(environ[i], key_length);
 		// value comes after '=' separator
-		vars[i].val = c + 1;
-		avl_insert(&env_vars, &vars[i].avl);
+		char *val = c + 1;
+		lh_table_insert(env_vars, key, val);
 	}
 }
 
