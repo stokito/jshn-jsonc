@@ -2,6 +2,7 @@ Makefile
 CMakeCache.txt
 CMakeFiles
 *.cmake
+/.idea/
 cmake-build-*
 build
 *.a
@@ -11,3 +12,9 @@ install_manifest.txt
 jshn
 *-example
 tests.*
+/debian/debhelper-build-stamp
+/debian/files
+/debian/jshn-jsonc.substvars
+/debian/.debhelper/
+/debian/jshn-jsonc/
+/debian/jshn-jsonc.debhelper.log

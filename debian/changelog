@@ -1,0 +1,5 @@
+jshn-jsonc (1.0.0) groovy; urgency=low
+
+  * Initial release. Removed ident and pretty print
+
+ -- Sergey Ponomarev <stokito@gmail.com>  Mon, 22 Feb 2021 00:00:00 +0000

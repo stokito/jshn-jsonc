@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(jshn_jsonc C)
+project(jshn-jsonc C)
 
 set(CMAKE_C_STANDARD 11)
 

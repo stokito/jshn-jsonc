@@ -1,0 +1,16 @@
+Source: jshn-jsonc
+Section: libs
+Priority: optional
+Maintainer: Sergey Ponomarev <stokito@gmail.com>
+Build-Depends: debhelper-compat (= 13), cmake, pkg-config, libjson-c-dev
+Standards-Version: 4.5.0
+Homepage: https://github.com/stokito/jshn-jsonc
+Vcs-Browser: https://github.com/stokito/jshn-jsonc
+Vcs-Git: https://github.com/stokito/jshn-jsonc.git
+
+Package: jshn-jsonc
+Architecture: any
+Multi-Arch: no
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Homepage: https://github.com/stokito/jshn-jsonc
+Description: Shell library to parse and generate JSON.
