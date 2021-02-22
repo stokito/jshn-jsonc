@@ -33,7 +33,6 @@
 #define MAX_VARLEN	256
 
 static struct avl_tree env_vars;
-static struct blob_buf b = { 0 };
 
 static const char *var_prefix = "";
 static int var_prefix_len = 0;
@@ -280,7 +279,7 @@ out:
 	return obj;
 }
 
-static int jshn_format(bool no_newline, bool indent, FILE *stream)
+static int jshn_format(FILE *stream)
 {
 	json_object *obj;
 	const char *output;
@@ -295,15 +294,7 @@ static int jshn_format(bool no_newline, bool indent, FILE *stream)
 	if (!(output = json_object_to_json_string(obj)))
 		goto out;
 
-	if (indent) {
-		blob_buf_init(&b, 0);
-		if (!blobmsg_add_json_from_string(&b, output))
-			goto out;
-		if (!(blobmsg_output = blobmsg_format_json_indent(b.head, 1, 0)))
-			goto out;
-		output = blobmsg_output;
-	}
-	fprintf(stream, "%s%s", output, no_newline ? "" : "\n");
+	fprintf(stream, "%s", output);
 	free(blobmsg_output);
 	ret = 0;
 
@@ -315,7 +306,7 @@ out:
 
 static int usage(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [-n] [-i] -r <message>|-R <file>|-o <file>|-p <prefix>|-w\n", progname);
+	fprintf(stderr, "Usage: %s -r <message>|-R <file>|-o <file>|-p <prefix>|-w\n", progname);
 	return 2;
 }
 
@@ -415,7 +406,7 @@ static int jshn_parse_file(const char *path)
 	return ret;
 }
 
-static int jshn_format_file(const char *path, bool no_newline, bool indent)
+static int jshn_format_file(const char *path)
 {
 	FILE *fp = NULL;
 	int ret = 0;
@@ -426,7 +417,7 @@ static int jshn_format_file(const char *path, bool no_newline, bool indent)
 		return 3;
 	}
 
-	ret = jshn_format(no_newline, indent, fp);
+	ret = jshn_format(fp);
 	fclose(fp);
 
 	return ret;
@@ -434,8 +425,6 @@ static int jshn_format_file(const char *path, bool no_newline, bool indent)
 
 int main(int argc, char **argv)
 {
-	bool no_newline = false;
-	bool indent = false;
 	int ch;
 
 	while ((ch = getopt(argc, argv, "p:nir:R:o:w")) != -1) {
@@ -449,14 +438,12 @@ int main(int argc, char **argv)
 		case 'R':
 			return jshn_parse_file(optarg);
 		case 'w':
-			return jshn_format(no_newline, indent, stdout);
+			return jshn_format(stdout);
 		case 'o':
-			return jshn_format_file(optarg, no_newline, indent);
+			return jshn_format_file(optarg);
 		case 'n':
-			no_newline = true;
-			break;
 		case 'i':
-			indent = true;
+			// ignore
 			break;
 		default:
 			// unknown param, show usage
