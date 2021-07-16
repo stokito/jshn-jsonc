@@ -41,3 +41,6 @@ This is just to be compatible with existing scripts.
 
 ## License
 ISC
+
+## See also
+* [Awesome JSON](https://github.com/burningtree/awesome-json) list of other usefull tools
