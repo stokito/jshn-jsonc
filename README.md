@@ -27,7 +27,7 @@ To build and install from sources:
 
 ## Fork
 This is a fork of OpenWrt jshn library that doesn't have a dependency to [libubox](https://gitlab.com/openwrt/project/libubox).
-Instead it uses internal functions from `linkhash.c` of json-c itself.
+Instead it uses internal functions from `linkhash.c` of [json-c](https://github.com/json-c/json-c) itself.
 The internal functions aren't part of public API so it's not guaranteed that after json-c update it won't be broken.
 But this is a very stable functions so this is probably never happen.
 
