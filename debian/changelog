@@ -1,4 +1,4 @@
-jshn-jsonc (1.0.0) groovy; urgency=low
+jshn-jsonc (1.0.0) stable; urgency=medium
 
   * Initial release. Removed ident and pretty print
 
